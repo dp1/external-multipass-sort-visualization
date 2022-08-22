@@ -1,10 +1,11 @@
 from functools import total_ordering
+from copy import copy
 from typing import List
 
 @total_ordering
-class Item:
+class Tuple:
     """
-    A generic item to be sorted. If empty == True, represents an empty slot
+    A tuple of the relationship. If empty == True, represents an empty slot
     """
     def __init__(self, value = 0, empty = False):
         self.value = value
@@ -12,15 +13,25 @@ class Item:
 
     def __lt__(self, other): return self.value < other.value
     def __eq__(self, other): return self.value == other.value
-    def __repr__(self): return f"{self.value}"
+    def __repr__(self): return '-' if self.empty else str(self.value)
 
-class SortStep:
+class Frame:
+    """
+    Fixed size frame
+    """
+    def __init__(self, data: List[Tuple]):
+        self.data = data
+
+    def __repr__(self): return str(self.data)
+    def __len__(self): return len(self.data)
+
+class StateSnapshot:
     """
     A snapshot of the relation and buffer state
     """
-    def __init__(self, buffer: List[Item], relation: List[Item], description = None):
-        self.buffer = buffer.copy()
-        self.relation = relation.copy()
+    def __init__(self, buffer: List[Frame], relation: List[Frame], description = None):
+        self.buffer = [copy(f) for f in buffer]
+        self.relation = [copy(f) for f in relation]
         self.description = description
 
     def __repr__(self):
