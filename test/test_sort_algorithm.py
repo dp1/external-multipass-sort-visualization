@@ -13,7 +13,7 @@ class TestSort(unittest.TestCase):
                 # print(original_tuples)
 
                 print(f'Running sort for B = {B}, F = {F}')
-                print(f'Data: {original_data}')
+                # print(f'Data: {original_data}')
 
                 sort.sort()
 

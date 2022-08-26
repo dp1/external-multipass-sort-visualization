@@ -33,4 +33,13 @@ class Sort:
             self.steps.append(StateSnapshot(self.buffer, self.relation, f'step {i}'))
             random.shuffle(self.relation)
 
-        # self.relation.sort()
+        values = []
+        for x in self.relation:
+            values += x.data
+        self.relation.clear()
+
+        values.sort()
+
+        for i in range(self.B):
+            data = [values[i * self.tuples_per_frame + j] for j in range(self.tuples_per_frame)]
+            self.relation.append(Frame(data))
