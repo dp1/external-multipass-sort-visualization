@@ -22,6 +22,10 @@ class Frame:
     def __init__(self, data: List[Tuple]):
         self.data = data
 
+    def clear(self):
+        for t in self.data:
+            t.empty = True
+
     def __repr__(self): return str(self.data)
     def __len__(self): return len(self.data)
 
@@ -35,5 +39,6 @@ class StateSnapshot:
         self.description = description
 
     def __repr__(self):
-        return f'relation={self.relation} buffer={self.buffer}' \
+        return f'relation={self.relation}\n' \
+            + f'buffer={self.buffer}\n' \
             + f' ({self.description})' if self.description else ''
