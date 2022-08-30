@@ -1,5 +1,5 @@
 from functools import total_ordering
-from copy import copy
+from copy import copy, deepcopy
 from typing import List
 
 @total_ordering
@@ -26,6 +26,33 @@ class Frame:
         for t in self.data:
             t.empty = True
 
+    def num_tuples(self):
+        ctr = 0
+        for t in self.data:
+            if not t.empty:
+                ctr += 1
+        return ctr
+
+    def get_first_tuple(self):
+        for t in self.data:
+            if not t.empty:
+                return t
+        return None
+
+    def pop_first_tuple(self):
+        for t in self.data:
+            if not t.empty:
+                res = deepcopy(t)
+                t.empty = True
+                return res
+        return None
+
+    def insert_tuple(self, x):
+        for i,t in enumerate(self.data):
+            if t.empty:
+                self.data[i] = deepcopy(x)
+                break
+
     def __repr__(self): return str(self.data)
     def __len__(self): return len(self.data)
 
@@ -41,4 +68,5 @@ class StateSnapshot:
     def __repr__(self):
         return f'relation={self.relation}\n' \
             + f'buffer={self.buffer}\n' \
-            + f' ({self.description})' if self.description else ''
+            + (f' ({self.description})' if self.description else '') \
+            + '\n'
