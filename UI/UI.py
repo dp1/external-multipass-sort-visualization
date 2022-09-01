@@ -1,6 +1,5 @@
 from logging import root
 import numbers
-from subprocess import CREATE_NEW_CONSOLE
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
@@ -12,7 +11,7 @@ from visualizer.sort_algorithm import Sort
 from visualizer.data import Tuple
 
 class UI:
-    def __init__(self) -> None:         
+    def __init__(self) -> None:
         #setup
         self.root = Tk()
         frm = ttk.Frame(self.root, padding=10)
@@ -21,7 +20,7 @@ class UI:
         self.generated = False
         self.snapShots=[]
 
-        #input 
+        #input
         Label(self.root,text="Relation size").grid(column=0,row=0)
         self.relEntry = tk.Entry(self.root,textvariable="0",validate='all')
         self.relEntry.grid(column=1,row=0)
@@ -48,7 +47,7 @@ class UI:
         posy=int(height/2)+(row*30)
 
         posx = posx-int(n/2)*22
-        if n%2==1: 
+        if n%2==1:
             posx = posx-11
         frames=[]
         for i in range(n):
@@ -101,7 +100,7 @@ class UI:
             self.canvas.delete("all")
             if(self.generated):
                 self.genFromSnapshot(state=self.snapShots[self.scale.get()])
-            
+
             self.root.update_idletasks()
             self.root.update()
 
