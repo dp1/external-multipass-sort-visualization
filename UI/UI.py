@@ -1,11 +1,10 @@
-from contextlib import redirect_stderr
-from numbers import Integral
 import numbers
 from subprocess import CREATE_NEW_CONSOLE
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
-from turtle import bgcolor
+from visualizer.data import StateSnapshot
+from visualizer.sort_algorithm import Sort
 
 class UI:
     def __init__(self) -> None:         
@@ -26,7 +25,7 @@ class UI:
         self.frameEntry.insert(END,"1")
         self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P')
         Button(self.root,text="scramble").grid(column=0,row=1,padx=10)
-        Button(self.root,text="sort").grid(column=1,row=1)
+        Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
         Button(self.root,text="set",command=lambda:self.genFrames()).grid(column=2,row=1)
 
         #canvas
@@ -60,7 +59,21 @@ class UI:
         self.frames(n=int(self.frameEntry.get()),row=0,outputFrame=True)
         self.frames(n=int(self.relEntry.get()),row=1,outputFrame=False)
 
-    def validate(self, P):
+    def genFromSnapshot(self, state: StateSnapshot):
+        frames = len(state.buffer)
+        relation = len(state.relation)
+
+        self.frames(n=frames,row=0,outputFrame=True)
+        self.frames(n=relation,row=1,outputFrame=False)
+        pass
+
+    def sort(self):
+        sort = Sort(B = 10, F = 5)
+        sort.sort()
+
+        self.genFromSnapshot(state=sort.steps[0])
+
+    def validate(self):
         try:
             float(P)
             return True
@@ -87,4 +100,5 @@ class myFrame:
 
         canvas.create_rectangle(self.x,self.y,self.x+20,self.y+20,fill=self.color)
         pass
+
 ui = UI()
