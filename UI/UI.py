@@ -124,5 +124,3 @@ class myFrame:
 
         canvas.create_rectangle(self.x,self.y,self.x+20,self.y+height,fill=self.color)
         pass
-
-ui = UI()
