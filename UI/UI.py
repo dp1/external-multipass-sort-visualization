@@ -4,10 +4,12 @@ from subprocess import CREATE_NEW_CONSOLE
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
+from typing import List
 import sys
 sys.path.append("../external-multipass-sort-visualization")
 from visualizer.data import StateSnapshot
 from visualizer.sort_algorithm import Sort
+from visualizer.data import Tuple
 
 class UI:
     def __init__(self) -> None:         
@@ -16,6 +18,8 @@ class UI:
         frm = ttk.Frame(self.root, padding=10)
         frm.grid()
         self.scale = 0
+        self.generated = False
+        self.snapShots=[]
 
         #input 
         Label(self.root,text="Relation size").grid(column=0,row=0)
@@ -35,9 +39,9 @@ class UI:
         self.canvas.grid(column=0,row=2,columnspan=20,rowspan=10,sticky=tk.N+tk.E+tk.S+tk.W)
 
 
-        self.root.mainloop()
+        self.loop()
 
-    def frames(self, n: numbers,row,outputFrame):
+    def frames(self, n: numbers, buffers: List[Frame],row):
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
         posx=int(width/2)
@@ -49,19 +53,27 @@ class UI:
         frames=[]
         for i in range(n):
             frame = myFrame(posx=posx,posy=posy,canvas=self.canvas,color="red")
+            if(len(buffers)>0):
+                buffer = buffers[i]
+                bLen = 4
+                for val in buffer.data:
+                    if val.empty:
+                        bLen-=1
+                h = int(20 * ((bLen)/4))
+                fill = myFrame(posx=posx,posy=posy+(20-h),height=h,canvas=self.canvas,color="green")
             posx+=22
             frames.append(frame)
-        posx+=10
-        if(outputFrame):
-            frames.append(myFrame(posx=posx,posy=posy,color="green",canvas=self.canvas))
+        # posx+=10
+        # if(outputFrame):
+        #     frames.append(myFrame(posx=posx,posy=posy,color="green",canvas=self.canvas))
         pass
 
     def genFromSnapshot(self, state: StateSnapshot):
         frames = len(state.buffer)
         relation = len(state.relation)
 
-        self.frames(n=frames,row=0,outputFrame=True)
-        self.frames(n=relation,row=1,outputFrame=False)
+        self.frames(n=frames,buffers=state.buffer,row=0)
+        self.frames(n=relation,buffers=state.relation,row=1)
         pass
 
     def sort(self):
@@ -69,11 +81,13 @@ class UI:
         sort.sort()
         self.canvas.delete("all")
         self.canvas.update()
-        self.genFromSnapshot(state=sort.steps[0])
+        # self.genFromSnapshot(state=sort.steps[0])
+        self.snapShots = sort.steps
 
-        self.scale = Scale(self.root,from_=0,to=len(sort.steps),orient=HORIZONTAL,length=200)
+        self.scale = Scale(self.root,from_=0,to=len(sort.steps)-1,orient=HORIZONTAL,length=200)
         self.scale.grid(column=0,row=10)
-        self.scale.after(24,self.genFromSnapshot(state=sort.steps[self.scale.get()]))
+        self.generated = True
+        #self.scale.after(24,self.genFromSnapshot(state=sort.steps[self.scale.get()]))
 
     def validate(self, P):
         try:
@@ -81,6 +95,15 @@ class UI:
             return True
         except ValueError:
             return False
+
+    def loop(self):
+        while(True):
+            self.canvas.delete("all")
+            if(self.generated):
+                self.genFromSnapshot(state=self.snapShots[self.scale.get()])
+            
+            self.root.update_idletasks()
+            self.root.update()
 
 class frameItem:
     def __init__(self,posx,posy) -> None:
@@ -90,7 +113,7 @@ class frameItem:
         pass
 
 class myFrame:
-    def __init__(self,posx,posy,color:str, canvas: Canvas) -> None:
+    def __init__(self,posx,posy,color:str, canvas: Canvas,height=20) -> None:
         #position of upper left corner of frame
         self.x = posx
         self.y = posy
@@ -100,7 +123,7 @@ class myFrame:
         else:
             self.color = color
 
-        canvas.create_rectangle(self.x,self.y,self.x+20,self.y+20,fill=self.color)
+        canvas.create_rectangle(self.x,self.y,self.x+20,self.y+height,fill=self.color)
         pass
 
 ui = UI()
