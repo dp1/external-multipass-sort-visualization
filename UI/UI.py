@@ -1,8 +1,11 @@
+from logging import root
 import numbers
 from subprocess import CREATE_NEW_CONSOLE
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
+import sys
+sys.path.append("../external-multipass-sort-visualization")
 from visualizer.data import StateSnapshot
 from visualizer.sort_algorithm import Sort
 
@@ -12,6 +15,7 @@ class UI:
         self.root = Tk()
         frm = ttk.Frame(self.root, padding=10)
         frm.grid()
+        self.scale = 0
 
         #input 
         Label(self.root,text="Relation size").grid(column=0,row=0)
@@ -24,13 +28,12 @@ class UI:
         self.frameEntry.grid(column=3,row=0)
         self.frameEntry.insert(END,"1")
         self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P')
-        Button(self.root,text="scramble").grid(column=0,row=1,padx=10)
         Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
-        Button(self.root,text="set",command=lambda:self.genFrames()).grid(column=2,row=1)
 
         #canvas
         self.canvas = Canvas(self.root,bg="white")
         self.canvas.grid(column=0,row=2,columnspan=20,rowspan=10,sticky=tk.N+tk.E+tk.S+tk.W)
+
 
         self.root.mainloop()
 
@@ -53,12 +56,6 @@ class UI:
             frames.append(myFrame(posx=posx,posy=posy,color="green",canvas=self.canvas))
         pass
 
-    def genFrames(self):
-        self.canvas.delete("all")
-        self.canvas.update()
-        self.frames(n=int(self.frameEntry.get()),row=0,outputFrame=True)
-        self.frames(n=int(self.relEntry.get()),row=1,outputFrame=False)
-
     def genFromSnapshot(self, state: StateSnapshot):
         frames = len(state.buffer)
         relation = len(state.relation)
@@ -68,12 +65,17 @@ class UI:
         pass
 
     def sort(self):
-        sort = Sort(B = 10, F = 5)
+        sort = Sort(B = int(self.relEntry.get()), F = int(self.frameEntry.get()))
         sort.sort()
-
+        self.canvas.delete("all")
+        self.canvas.update()
         self.genFromSnapshot(state=sort.steps[0])
 
-    def validate(self):
+        self.scale = Scale(self.root,from_=0,to=len(sort.steps),orient=HORIZONTAL,length=200)
+        self.scale.grid(column=0,row=10)
+        self.scale.after(24,self.genFromSnapshot(state=sort.steps[self.scale.get()]))
+
+    def validate(self, P):
         try:
             float(P)
             return True
