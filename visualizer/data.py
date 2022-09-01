@@ -61,8 +61,8 @@ class StateSnapshot:
     A snapshot of the relation and buffer state
     """
     def __init__(self, buffer: List[Frame], relation: List[Frame], description = None):
-        self.buffer = [copy(f) for f in buffer]
-        self.relation = [copy(f) for f in relation]
+        self.buffer = [deepcopy(f) for f in buffer]
+        self.relation = [deepcopy(f) for f in relation]
         self.description = description
 
     def __repr__(self):
