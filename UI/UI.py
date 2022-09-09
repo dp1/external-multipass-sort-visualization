@@ -41,6 +41,8 @@ class UI:
         self.loop()
 
     def frames(self, n: numbers, buffers: List[Frame],row):
+        relationSize = int(self.relEntry.get())
+        frameSize = self.frameEntry.get()
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
         posx=int(width/2)
@@ -54,12 +56,21 @@ class UI:
             frame = myFrame(posx=posx,posy=posy,canvas=self.canvas,color="red")
             if(len(buffers)>0):
                 buffer = buffers[i]
-                bLen = 4
+                bLen = 3
+                # for val in buffer.data:
+                #     if val.empty:
+                #         bLen-=1
+                # h = int(20 * ((bLen)/4))
+                #fill = myFrame(posx=posx,posy=posy+(20-h),height=h,canvas=self.canvas,color="green")
                 for val in buffer.data:
-                    if val.empty:
+                    if not val.empty:
+                        data = val.value
+                        pos = data/(relationSize*4)
+                        r = 255
+                        g = int(255 * (1-pos))
+                        b = int(255 * pos)
+                        item = frameItem(posx=posx,posy=posy+(bLen*5),canvas=self.canvas,color=colorString(r,g,b))
                         bLen-=1
-                h = int(20 * ((bLen)/4))
-                fill = myFrame(posx=posx,posy=posy+(20-h),height=h,canvas=self.canvas,color="green")
             posx+=22
             frames.append(frame)
         # posx+=10
@@ -80,13 +91,11 @@ class UI:
         sort.sort()
         self.canvas.delete("all")
         self.canvas.update()
-        # self.genFromSnapshot(state=sort.steps[0])
         self.snapShots = sort.steps
 
         self.scale = Scale(self.root,from_=0,to=len(sort.steps)-1,orient=HORIZONTAL,length=200)
         self.scale.grid(column=0,row=10)
         self.generated = True
-        #self.scale.after(24,self.genFromSnapshot(state=sort.steps[self.scale.get()]))
 
     def validate(self, P):
         try:
@@ -96,6 +105,7 @@ class UI:
             return False
 
     def loop(self):
+        #print(colorString(12,15,1))
         while(True):
             self.canvas.delete("all")
             if(self.generated):
@@ -105,10 +115,12 @@ class UI:
             self.root.update()
 
 class frameItem:
-    def __init__(self,posx,posy) -> None:
-        self.color = "green"
+    def __init__(self,posx,posy, canvas: Canvas, color = "green") -> None:
+        self.color = color
         self.x = posx
         self.y = posy
+
+        canvas.create_rectangle(self.x,self.y,self.x+20,self.y+5,fill=self.color)
         pass
 
 class myFrame:
@@ -118,9 +130,14 @@ class myFrame:
         self.y = posy
 
         if(color == ""):
-            self.color = "red"
+            self.color = "green"
         else:
             self.color = color
 
         canvas.create_rectangle(self.x,self.y,self.x+20,self.y+height,fill=self.color)
         pass
+
+def colorString(r,g,b):
+    """translates an rgb tuple of int to a tkinter friendly color code
+    """
+    return f'#{r:02x}{g:02x}{b:02x}'
