@@ -1,8 +1,11 @@
+from distutils.cmd import Command
 from logging import root
 import numbers
+from time import sleep
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
+from tracemalloc import Snapshot
 from typing import List
 import sys
 sys.path.append("../external-multipass-sort-visualization")
@@ -19,6 +22,8 @@ class UI:
         self.scale = 0
         self.generated = False
         self.snapShots=[]
+        self.pos = 0
+        self.playC = False
 
         #input
         Label(self.root,text="Relation size").grid(column=0,row=0)
@@ -32,6 +37,7 @@ class UI:
         self.frameEntry.insert(END,"1")
         self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P')
         Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
+        self.playB = 0
 
         #canvas
         self.canvas = Canvas(self.root,bg="white")
@@ -46,22 +52,17 @@ class UI:
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
         posx=int(width/2)
-        posy=int(height/2)+(row*30)
+        posy=int(height/2)+(row*30)-50
 
         posx = posx-int(n/2)*22
         if n%2==1:
             posx = posx-11
         frames=[]
         for i in range(n):
-            frame = myFrame(posx=posx,posy=posy,canvas=self.canvas,color="red")
+            frame = myFrame(posx=posx,posy=posy,canvas=self.canvas, color="green")
             if(len(buffers)>0):
                 buffer = buffers[i]
                 bLen = 3
-                # for val in buffer.data:
-                #     if val.empty:
-                #         bLen-=1
-                # h = int(20 * ((bLen)/4))
-                #fill = myFrame(posx=posx,posy=posy+(20-h),height=h,canvas=self.canvas,color="green")
                 for val in buffer.data:
                     if not val.empty:
                         data = val.value
@@ -96,6 +97,8 @@ class UI:
         self.scale = Scale(self.root,from_=0,to=len(sort.steps)-1,orient=HORIZONTAL,length=200)
         self.scale.grid(column=0,row=10)
         self.generated = True
+        self.playB = Button(self.root,text="Play",command=lambda:self.play())
+        self.playB.grid(column=1,row=10)
 
     def validate(self, P):
         try:
@@ -104,15 +107,24 @@ class UI:
         except ValueError:
             return False
 
+    def play(self):
+        self.playC = True
+
     def loop(self):
         #print(colorString(12,15,1))
         while(True):
             self.canvas.delete("all")
             if(self.generated):
                 self.genFromSnapshot(state=self.snapShots[self.scale.get()])
+                if(self.playC):
+                    if(self.pos == len(self.snapShots)-1):
+                        self.playC=False
+                    self.scale.set(self.pos)
+                    self.pos+=1
 
             self.root.update_idletasks()
             self.root.update()
+            sleep(1/30)
 
 class frameItem:
     def __init__(self,posx,posy, canvas: Canvas, color = "green") -> None:
