@@ -29,12 +29,12 @@ class UI:
         Label(self.root,text="Relation size").grid(column=0,row=0)
         self.relEntry = tk.Entry(self.root,textvariable="0",validate='all')
         self.relEntry.grid(column=1,row=0)
-        self.relEntry.insert(END,"1")
+        self.relEntry.insert(END,"20")
         self.relEntry['validatecommand'] = (self.relEntry.register(self.validate),'%P')
         Label(self.root,text="number of frames").grid(column=2,row=0)
         self.frameEntry = Entry(self.root,textvariable="1",validate='all')
         self.frameEntry.grid(column=3,row=0)
-        self.frameEntry.insert(END,"1")
+        self.frameEntry.insert(END,"5")
         self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P')
         Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
         self.playB = 0
@@ -85,6 +85,8 @@ class UI:
 
         self.frames(n=frames,buffers=state.buffer,row=0)
         self.frames(n=relation,buffers=state.relation,row=1)
+        
+        description = self.canvas.create_text(100,10,text=state.description)
         pass
 
     def sort(self):
@@ -103,7 +105,7 @@ class UI:
     def validate(self, P):
         try:
             float(P)
-            return True
+            return P>1 and P<=20
         except ValueError:
             return False
 
@@ -118,14 +120,14 @@ class UI:
             if(self.generated):
                 self.genFromSnapshot(state=self.snapShots[self.scale.get()])
                 if(self.playC):
-                    if(self.pos == len(self.snapShots)-1):
+                    self.pos+=1
+                    if(self.pos >= len(self.snapShots)-1):
                         self.playC=False
                     self.scale.set(self.pos)
-                    self.pos+=1
+                    sleep(10/(len(self.snapShots)))
 
             self.root.update_idletasks()
             self.root.update()
-            sleep(1/30)
 
 class frameItem:
     def __init__(self,posx,posy, canvas: Canvas, color = "green") -> None:
