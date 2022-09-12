@@ -109,6 +109,7 @@ class UI:
 
     def play(self):
         self.playC = True
+        self.pos = 0
 
     def loop(self):
         #print(colorString(12,15,1))
