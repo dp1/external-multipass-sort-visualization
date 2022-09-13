@@ -30,12 +30,13 @@ class UI:
         self.relEntry = tk.Entry(self.root,textvariable="0",validate='all')
         self.relEntry.grid(column=1,row=0)
         self.relEntry.insert(END,"20")
-        self.relEntry['validatecommand'] = (self.relEntry.register(self.validate),'%P')
+        self.relEntry['validatecommand'] = (self.relEntry.register(self.validate),'%P','%W')
+        self.relEntry['invalidcommand'] = (self.relEntry.register(self.invalidInput),'%P','%W')
         Label(self.root,text="number of frames").grid(column=2,row=0)
         self.frameEntry = Entry(self.root,textvariable="1",validate='all')
         self.frameEntry.grid(column=3,row=0)
         self.frameEntry.insert(END,"5")
-        self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P')
+        self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P','%W')
         Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
         self.playB = 0
 
@@ -67,6 +68,7 @@ class UI:
                     if not val.empty:
                         data = val.value
                         pos = data/(relationSize*4)
+                        if pos > 1: pos = 1
                         r = 255
                         g = int(255 * (1-pos))
                         b = int(255 * pos)
@@ -74,9 +76,6 @@ class UI:
                         bLen-=1
             posx+=22
             frames.append(frame)
-        # posx+=10
-        # if(outputFrame):
-        #     frames.append(myFrame(posx=posx,posy=posy,color="green",canvas=self.canvas))
         pass
 
     def genFromSnapshot(self, state: StateSnapshot):
@@ -102,12 +101,42 @@ class UI:
         self.playB = Button(self.root,text="Play",command=lambda:self.play())
         self.playB.grid(column=1,row=10)
 
-    def validate(self, P):
+    def validate(self, P, w):
+        if P=="":
+            if(w==".!entry"):
+                self.relEntry.delete(first=0,last=END)
+                self.relEntry.insert(END,"2")
+            else:
+                self.frameEntry.delete(first=0,last=END)
+                self.frameEntry.insert(END,"2")
+            return False
         try:
-            float(P)
-            return P>1 and P<=20
+            a = float(P)
+            if(a < 2):
+                if(w==".!entry"):
+                    self.relEntry.delete(first=0,last=END)
+                    self.relEntry.insert(END,"2")
+                else:
+                    self.frameEntry.delete(first=0,last=END)
+                    self.frameEntry.insert(END,"2")
+            if(a >20 ):
+                if(w==".!entry"):
+                    self.relEntry.delete(first=0,last=END)
+                    self.relEntry.insert(END,"20")
+                else:
+                    self.frameEntry.delete(first=0,last=END)
+                    self.frameEntry.insert(END,"20")
+            return a>1 and a<=20
         except ValueError:
             return False
+
+    def invalidInput(self, P, w):
+        if(w==".!entry"):
+            self.relEntry.delete(first=0,last=END)
+            self.relEntry.insert(END,"2")
+        else:
+            self.frameEntry.delete(first=0,last=END)
+            self.frameEntry.insert(END,"2")
 
     def play(self):
         self.playC = True
