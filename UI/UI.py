@@ -1,5 +1,6 @@
 from distutils.cmd import Command
 from logging import root
+from multiprocessing.sharedctypes import Value
 import numbers
 from time import sleep
 from tkinter import *
@@ -27,16 +28,17 @@ class UI:
 
         #input
         Label(self.root,text="Relation size").grid(column=0,row=0)
-        self.relEntry = tk.Entry(self.root,textvariable="0",validate='all')
+        self.relEntry = tk.Entry(self.root,textvariable="0",name="relationSize")
         self.relEntry.grid(column=1,row=0)
         self.relEntry.insert(END,"20")
-        self.relEntry['validatecommand'] = (self.relEntry.register(self.validate),'%P','%W')
-        self.relEntry['invalidcommand'] = (self.relEntry.register(self.invalidInput),'%P','%W')
+        # self.relEntry['validatecommand'] = (self.relEntry.register(self.validate),'%P','%W')
+        # self.relEntry['invalidcommand'] = (self.relEntry.register(self.invalidInput),'%P','%W')
         Label(self.root,text="number of frames").grid(column=2,row=0)
-        self.frameEntry = Entry(self.root,textvariable="1",validate='all')
+        self.frameEntry = Entry(self.root,textvariable="1",name="framesNumber")
         self.frameEntry.grid(column=3,row=0)
         self.frameEntry.insert(END,"5")
-        self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P','%W')
+        # self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P','%W')
+        # self.frameEntry['invalidcommand'] = (self.frameEntry.register(self.invalidInput),'%P','%W')
         Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
         self.playB = 0
 
@@ -48,8 +50,10 @@ class UI:
         self.loop()
 
     def frames(self, n: numbers, buffers: List[Frame],row):
-        relationSize = int(self.relEntry.get())
-        frameSize = self.frameEntry.get()
+        try:
+            relationSize = int(self.relEntry.get())
+        except ValueError:
+            return
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
         posx=int(width/2)
@@ -89,7 +93,18 @@ class UI:
         pass
 
     def sort(self):
-        sort = Sort(B = int(self.relEntry.get()), F = int(self.frameEntry.get()))
+        relSize = 2
+        frameSize = 2
+        try:
+            relSize = int(self.relEntry.get())
+            frameSize = int(self.frameEntry.get())
+            if relSize<2 or frameSize<2:
+                raise ValueError
+        except ValueError:
+            self.canvas.create_text(20,20,text="Invalid Input, both need to be an integer >2")
+            return
+
+        sort = Sort(B = relSize, F = frameSize)
         sort.sort()
         self.canvas.delete("all")
         self.canvas.update()
@@ -103,35 +118,19 @@ class UI:
 
     def validate(self, P, w):
         if P=="":
-            if(w==".!entry"):
-                self.relEntry.delete(first=0,last=END)
-                self.relEntry.insert(END,"2")
-            else:
-                self.frameEntry.delete(first=0,last=END)
-                self.frameEntry.insert(END,"2")
+            print(False)
             return False
         try:
             a = float(P)
-            if(a < 2):
-                if(w==".!entry"):
-                    self.relEntry.delete(first=0,last=END)
-                    self.relEntry.insert(END,"2")
-                else:
-                    self.frameEntry.delete(first=0,last=END)
-                    self.frameEntry.insert(END,"2")
-            if(a >20 ):
-                if(w==".!entry"):
-                    self.relEntry.delete(first=0,last=END)
-                    self.relEntry.insert(END,"20")
-                else:
-                    self.frameEntry.delete(first=0,last=END)
-                    self.frameEntry.insert(END,"20")
+            print(a>1 and a <= 20)
             return a>1 and a<=20
         except ValueError:
+            print(False)
             return False
 
     def invalidInput(self, P, w):
-        if(w==".!entry"):
+        print(w)
+        if(w==".relationSize"):
             self.relEntry.delete(first=0,last=END)
             self.relEntry.insert(END,"2")
         else:
