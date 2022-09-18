@@ -1,3 +1,4 @@
+from ast import Delete
 from distutils.cmd import Command
 from logging import root
 from multiprocessing.sharedctypes import Value
@@ -20,11 +21,14 @@ class UI:
         self.root = Tk()
         frm = ttk.Frame(self.root, padding=10)
         frm.grid()
+
         self.scale = 0
         self.generated = False
         self.snapShots=[]
         self.pos = 0
         self.playC = False
+        self.relSize = 0
+        self.update = False
 
         #input
         Label(self.root,text="Relation size").grid(column=0,row=0)
@@ -50,10 +54,7 @@ class UI:
         self.loop()
 
     def frames(self, n: numbers, buffers: List[Frame],row):
-        try:
-            relationSize = int(self.relEntry.get())
-        except ValueError:
-            return
+        relationSize = self.relSize 
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
         posx=int(width/2)
@@ -82,7 +83,17 @@ class UI:
             frames.append(frame)
         pass
 
+    def updateCanvas(self):
+        if(self.generated):
+            snapPos = int(self.scale.get())
+
+            if (snapPos != self.pos):
+                #self.sort()
+                self.pos = snapPos
+                self.update = True
+
     def genFromSnapshot(self, state: StateSnapshot):
+        self.canvas.delete("all")
         frames = len(state.buffer)
         relation = len(state.relation)
 
@@ -90,21 +101,26 @@ class UI:
         self.frames(n=relation,buffers=state.relation,row=1)
         
         description = self.canvas.create_text(100,10,text=state.description)
-        pass
+        self.update = False or self.playC
 
     def sort(self):
-        relSize = 2
-        frameSize = 2
+
+        self.checkInput()
+
+        self.playC = False
+        self.pos = 0
         try:
-            relSize = int(self.relEntry.get())
+            self.relSize = int(self.relEntry.get())
             frameSize = int(self.frameEntry.get())
-            if relSize<2 or frameSize<2:
+            self.oldFrmNum = frameSize
+            self.oldRelNum = self.relSize
+            if self.relSize<2 or frameSize<2:
                 raise ValueError
         except ValueError:
             self.canvas.create_text(20,20,text="Invalid Input, both need to be an integer >2")
             return
 
-        sort = Sort(B = relSize, F = frameSize)
+        sort = Sort(B = self.relSize, F = frameSize)
         sort.sort()
         self.canvas.delete("all")
         self.canvas.update()
@@ -115,44 +131,71 @@ class UI:
         self.generated = True
         self.playB = Button(self.root,text="Play",command=lambda:self.play())
         self.playB.grid(column=1,row=10)
-
-    def validate(self, P, w):
-        if P=="":
-            print(False)
-            return False
-        try:
-            a = float(P)
-            print(a>1 and a <= 20)
-            return a>1 and a<=20
-        except ValueError:
-            print(False)
-            return False
-
-    def invalidInput(self, P, w):
-        print(w)
-        if(w==".relationSize"):
-            self.relEntry.delete(first=0,last=END)
-            self.relEntry.insert(END,"2")
-        else:
-            self.frameEntry.delete(first=0,last=END)
-            self.frameEntry.insert(END,"2")
+        self.update = True
 
     def play(self):
-        self.playC = True
+        self.playC = not self.playC
         self.pos = 0
+        self.update = True
+
+    def checkInput(self):
+        rel = self.relEntry.get()
+        if(rel == ""):
+            self.relEntry.insert(END,"2")
+        else:
+            try:
+                r = int(rel)
+                if r < 2: 
+                    self.relEntry.delete(0,END)
+                    self.relEntry.insert(END,"2")
+            except ValueError:
+                self.relEntry.delete(0,END)
+                self.relEntry.insert(END,"2")
+
+
+        frm = self.frameEntry.get()
+        if(frm == ""):
+            self.frameEntry.insert(END,"2")
+        else:
+            try:
+                f = int(frm)
+                if f < 2: 
+                    self.frameEntry.delete(0,END)
+                    self.frameEntry.insert(END,"2")
+            except ValueError:
+                self.frameEntry.delete(0,END)
+                self.frameEntry.insert(END,"2")
+
+    def draw(self):
+        if(self.update):
+            self.genFromSnapshot(state=self.snapShots[self.pos])
+
 
     def loop(self):
-        #print(colorString(12,15,1))
         while(True):
-            self.canvas.delete("all")
-            if(self.generated):
-                self.genFromSnapshot(state=self.snapShots[self.scale.get()])
-                if(self.playC):
-                    self.pos+=1
-                    if(self.pos >= len(self.snapShots)-1):
-                        self.playC=False
-                    self.scale.set(self.pos)
-                    sleep(10/(len(self.snapShots)))
+            #check valid input
+            #check if need redraw
+            self.updateCanvas()
+            #draw
+            self.draw()
+
+            if(self.playC):
+                self.pos+=1
+                if(self.pos >= len(self.snapShots)):
+                    self.playC=False
+                    self.update = False
+                self.scale.set(self.pos)
+                sleep(10/(len(self.snapShots)))
+
+#            self.pos = self.scale.get()
+            # if(self.generated):
+            #     self.genFromSnapshot(state=self.snapShots[self.pos])
+            #     if(self.playC):
+            #         self.pos+=1
+            #         if(self.pos >= len(self.snapShots)-1):
+            #             self.playC=False
+            #         self.scale.set(self.pos)
+            #         sleep(10/(len(self.snapShots)))
 
             self.root.update_idletasks()
             self.root.update()
