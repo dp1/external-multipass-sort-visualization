@@ -1,24 +1,14 @@
-from ast import Delete
-from distutils.cmd import Command
-from logging import root
-from multiprocessing.sharedctypes import Value
-import numbers
 from time import sleep
-from tkinter import *
 from tkinter import ttk
 import tkinter as tk
-from tracemalloc import Snapshot
 from typing import List
-import sys
-sys.path.append("../external-multipass-sort-visualization")
-from visualizer.data import StateSnapshot
+from visualizer.data import StateSnapshot, Frame
 from visualizer.sort_algorithm import Sort
-from visualizer.data import Tuple
 
 class UI:
     def __init__(self) -> None:
         #setup
-        self.root = Tk()
+        self.root = tk.Tk()
         frm = ttk.Frame(self.root, padding=10)
         frm.grid()
 
@@ -31,30 +21,30 @@ class UI:
         self.update = False
 
         #input
-        Label(self.root,text="Relation size").grid(column=0,row=0)
+        tk.Label(self.root,text="Relation size").grid(column=0,row=0)
         self.relEntry = tk.Entry(self.root,textvariable="0",name="relationSize")
         self.relEntry.grid(column=1,row=0)
-        self.relEntry.insert(END,"20")
+        self.relEntry.insert(tk.END,"20")
         # self.relEntry['validatecommand'] = (self.relEntry.register(self.validate),'%P','%W')
         # self.relEntry['invalidcommand'] = (self.relEntry.register(self.invalidInput),'%P','%W')
-        Label(self.root,text="number of frames").grid(column=2,row=0)
-        self.frameEntry = Entry(self.root,textvariable="1",name="framesNumber")
+        tk.Label(self.root,text="number of frames").grid(column=2,row=0)
+        self.frameEntry = tk.Entry(self.root,textvariable="1",name="framesNumber")
         self.frameEntry.grid(column=3,row=0)
-        self.frameEntry.insert(END,"5")
+        self.frameEntry.insert(tk.END,"5")
         # self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P','%W')
         # self.frameEntry['invalidcommand'] = (self.frameEntry.register(self.invalidInput),'%P','%W')
-        Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
+        tk.Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
         self.playB = 0
 
         #canvas
-        self.canvas = Canvas(self.root,bg="white")
+        self.canvas = tk.Canvas(self.root,bg="white")
         self.canvas.grid(column=0,row=2,columnspan=20,rowspan=10,sticky=tk.N+tk.E+tk.S+tk.W)
 
 
         self.loop()
 
-    def frames(self, n: numbers, buffers: List[Frame],row):
-        relationSize = self.relSize 
+    def frames(self, n: int, buffers: List[Frame],row):
+        relationSize = self.relSize
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
         posx=int(width/2)
@@ -99,7 +89,7 @@ class UI:
 
         self.frames(n=frames,buffers=state.buffer,row=0)
         self.frames(n=relation,buffers=state.relation,row=1)
-        
+
         description = self.canvas.create_text(100,10,text=state.description)
         self.update = False or self.playC
 
@@ -126,10 +116,10 @@ class UI:
         self.canvas.update()
         self.snapShots = sort.steps
 
-        self.scale = Scale(self.root,from_=0,to=len(sort.steps)-1,orient=HORIZONTAL,length=200)
+        self.scale = tk.Scale(self.root,from_=0,to=len(sort.steps)-1,orient=tk.HORIZONTAL,length=200)
         self.scale.grid(column=0,row=10)
         self.generated = True
-        self.playB = Button(self.root,text="Play",command=lambda:self.play())
+        self.playB = tk.Button(self.root,text="Play",command=lambda:self.play())
         self.playB.grid(column=1,row=10)
         self.update = True
 
@@ -141,30 +131,30 @@ class UI:
     def checkInput(self):
         rel = self.relEntry.get()
         if(rel == ""):
-            self.relEntry.insert(END,"2")
+            self.relEntry.insert(tk.END,"2")
         else:
             try:
                 r = int(rel)
-                if r < 2: 
-                    self.relEntry.delete(0,END)
-                    self.relEntry.insert(END,"2")
+                if r < 2:
+                    self.relEntry.delete(0,tk.END)
+                    self.relEntry.insert(tk.END,"2")
             except ValueError:
-                self.relEntry.delete(0,END)
-                self.relEntry.insert(END,"2")
+                self.relEntry.delete(0,tk.END)
+                self.relEntry.insert(tk.END,"2")
 
 
         frm = self.frameEntry.get()
         if(frm == ""):
-            self.frameEntry.insert(END,"2")
+            self.frameEntry.insert(tk.END,"2")
         else:
             try:
                 f = int(frm)
-                if f < 2: 
-                    self.frameEntry.delete(0,END)
-                    self.frameEntry.insert(END,"2")
+                if f < 2:
+                    self.frameEntry.delete(0,tk.END)
+                    self.frameEntry.insert(tk.END,"2")
             except ValueError:
-                self.frameEntry.delete(0,END)
-                self.frameEntry.insert(END,"2")
+                self.frameEntry.delete(0,tk.END)
+                self.frameEntry.insert(tk.END,"2")
 
     def draw(self):
         if(self.update):
@@ -201,7 +191,7 @@ class UI:
             self.root.update()
 
 class frameItem:
-    def __init__(self,posx,posy, canvas: Canvas, color = "green") -> None:
+    def __init__(self,posx,posy, canvas: tk.Canvas, color = "green") -> None:
         self.color = color
         self.x = posx
         self.y = posy
@@ -210,7 +200,7 @@ class frameItem:
         pass
 
 class myFrame:
-    def __init__(self,posx,posy,color:str, canvas: Canvas,height=20) -> None:
+    def __init__(self,posx,posy,color:str, canvas: tk.Canvas,height=20) -> None:
         #position of upper left corner of frame
         self.x = posx
         self.y = posy
