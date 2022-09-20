@@ -9,10 +9,12 @@ class UI:
     def __init__(self) -> None:
         #setup
         self.root = tk.Tk()
-        frm = ttk.Frame(self.root, padding=10)
-        frm.grid()
+        self.root.title("Multipass sort")
 
-        self.scale = 0
+        self.frm = ttk.Frame(self.root, padding=10)
+        self.frm.grid()
+
+        self.scale = None
         self.generated = False
         self.snapShots=[]
         self.pos = 0
@@ -34,12 +36,18 @@ class UI:
         # self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P','%W')
         # self.frameEntry['invalidcommand'] = (self.frameEntry.register(self.invalidInput),'%P','%W')
         tk.Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
-        self.playB = 0
+        self.playB = None
 
         #canvas
         self.canvas = tk.Canvas(self.root,bg="white")
         self.canvas.grid(column=0,row=2,columnspan=20,rowspan=10,sticky=tk.N+tk.E+tk.S+tk.W)
 
+        # Arrow movement
+        self.frm.bind('<Left>', lambda _: self.scale.set(max(0, self.scale.get() - 1)) if self.scale else None)
+        self.frm.bind('<Right>', lambda _: self.scale.set(max(0, self.scale.get() + 1)) if self.scale else None)
+
+        # Restore focus by clicking on the canvas
+        self.canvas.bind("<Button-1>", lambda _: self.frm.focus_set())
 
         self.loop()
 
@@ -90,7 +98,7 @@ class UI:
         self.frames(n=frames,buffers=state.buffer,row=0)
         self.frames(n=relation,buffers=state.relation,row=1)
 
-        description = self.canvas.create_text(100,10,text=state.description)
+        description = self.canvas.create_text(120,10,text=state.description)
         self.update = False or self.playC
 
     def sort(self):
@@ -122,6 +130,8 @@ class UI:
         self.playB = tk.Button(self.root,text="Play",command=lambda:self.play())
         self.playB.grid(column=1,row=10)
         self.update = True
+
+        self.frm.focus_set()
 
     def play(self):
         self.playC = not self.playC
@@ -175,17 +185,12 @@ class UI:
                     self.playC=False
                     self.update = False
                 self.scale.set(self.pos)
-                sleep(10/(len(self.snapShots)))
 
-#            self.pos = self.scale.get()
-            # if(self.generated):
-            #     self.genFromSnapshot(state=self.snapShots[self.pos])
-            #     if(self.playC):
-            #         self.pos+=1
-            #         if(self.pos >= len(self.snapShots)-1):
-            #             self.playC=False
-            #         self.scale.set(self.pos)
-            #         sleep(10/(len(self.snapShots)))
+                frameTime = min(0.5, 10 / len(self.snapShots))
+                sleep(frameTime)
+
+            if self.playB:
+                self.playB.config(text='Pause' if self.playC else 'Play')
 
             self.root.update_idletasks()
             self.root.update()
