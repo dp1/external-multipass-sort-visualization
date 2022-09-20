@@ -135,9 +135,9 @@ class UI:
         else:
             try:
                 r = int(rel)
-                if r < 2:
+                if r < 2 or r > 30:
                     self.relEntry.delete(0,tk.END)
-                    self.relEntry.insert(tk.END,"2")
+                    self.relEntry.insert(tk.END, "2" if r < 2 else "30")
             except ValueError:
                 self.relEntry.delete(0,tk.END)
                 self.relEntry.insert(tk.END,"2")
@@ -149,9 +149,9 @@ class UI:
         else:
             try:
                 f = int(frm)
-                if f < 2:
+                if f < 2 or f > 30:
                     self.frameEntry.delete(0,tk.END)
-                    self.frameEntry.insert(tk.END,"2")
+                    self.frameEntry.insert(tk.END, "2" if f < 2 else "30")
             except ValueError:
                 self.frameEntry.delete(0,tk.END)
                 self.frameEntry.insert(tk.END,"2")
@@ -197,7 +197,6 @@ class frameItem:
         self.y = posy
 
         canvas.create_rectangle(self.x,self.y,self.x+20,self.y+5,fill=self.color)
-        pass
 
 class myFrame:
     def __init__(self,posx,posy,color:str, canvas: tk.Canvas,height=20) -> None:
@@ -211,7 +210,6 @@ class myFrame:
             self.color = color
 
         canvas.create_rectangle(self.x,self.y,self.x+20,self.y+height,fill=self.color)
-        pass
 
 def colorString(r,g,b):
     """translates an rgb tuple of int to a tkinter friendly color code
