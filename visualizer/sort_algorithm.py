@@ -32,7 +32,7 @@ class Sort:
     def sort(self):
         # Step 1. Create runs of F frames
 
-        self.snapshot(f'Step 1: Create runs')
+        self.snapshot('Step 1: Create runs')
 
         run_start, run_end = [], []
         for i in range(0, self.B, self.F):
@@ -46,7 +46,7 @@ class Sort:
 
             self.snapshot(f'Load {run_length} frames')
             self.sort_buffer(0, run_length)
-            self.snapshot(f'Sort frames')
+            self.snapshot('Sort frames')
 
             for j in range(run_length):
                 self.buffer[j], self.relation[i+j] = self.relation[i+j], self.buffer[j]
@@ -54,6 +54,8 @@ class Sort:
             self.snapshot(f'Store sorted run {i // self.F}')
 
         # Step 2...N. Merge runs together
+
+        self.snapshot('Step 2: Merge runs')
 
         if self.F - 1 == 1 and len(run_start) > 1:
             self.snapshot('Unable to merge with only 2 frames')
