@@ -27,15 +27,11 @@ class UI:
         self.relEntry = tk.Entry(self.root,textvariable="0",name="relationSize")
         self.relEntry.grid(column=1,row=0)
         self.relEntry.insert(tk.END,"20")
-        # self.relEntry['validatecommand'] = (self.relEntry.register(self.validate),'%P','%W')
-        # self.relEntry['invalidcommand'] = (self.relEntry.register(self.invalidInput),'%P','%W')
-        tk.Label(self.root,text="number of frames").grid(column=2,row=0)
+        tk.Label(self.root,text="Number of frames").grid(column=2,row=0)
         self.frameEntry = tk.Entry(self.root,textvariable="1",name="framesNumber")
         self.frameEntry.grid(column=3,row=0)
         self.frameEntry.insert(tk.END,"5")
-        # self.frameEntry['validatecommand'] = (self.frameEntry.register(self.validate),'%P','%W')
-        # self.frameEntry['invalidcommand'] = (self.frameEntry.register(self.invalidInput),'%P','%W')
-        tk.Button(self.root,text="sort",command=lambda:self.sort()).grid(column=1,row=1)
+        tk.Button(self.root,text="Sort",command=lambda:self.sort()).grid(column=1,row=1)
         self.playB = None
 
         #canvas
